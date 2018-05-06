@@ -84,8 +84,13 @@ form = "log(pmercado) ~ gran.reserva+premium+super.premium+icono+
   cs+came+sy+et+
   medianas.bajo.precio+emergentes.exclusivas+
   valle.maipo+colchagua+
+<<<<<<< HEAD
   puntaje+puntajesq+
   antigüedad+antisq"
+=======
+  puntaje+I(puntaje**2)+
+  antigüedad+I(antigüedad**2)"
+>>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
 
 ols = lm(form, data = data)
 coeftest(ols, vcov = vcovHC(ols, "HC1"))
@@ -128,13 +133,20 @@ sumM3 = summary(modelo3, se = "boot", bsmethod = "xy", R = 1000)
 stargazer(sumM1$coefficients, type = "text")
 stargazer(sumM2$coefficients, type = "text")
 stargazer(sumM3$coefficients, type = "text")
+<<<<<<< HEAD
 
 
 
+=======
+
+
+
+>>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
 QR = rq(form,tau = seq(0.05,0.95, by=0.05), data=data, method = "fn")
 sumQR = summary(QR, se = "boot", bsmethod = "xy", R = 100)
 
 plot(sumQR, parm = c(-1,-6,-7,-8,-9),ols = FALSE)
+<<<<<<< HEAD
 
 summary(ols$model)
 
@@ -150,8 +162,15 @@ modelo2 = rq(form,tau = .5, data=data, method = "fn",
              contrasts = FALSE)
 modelo3 = rq(form,tau = .75, data=data, method = "fn", 
              contrasts = FALSE)
+=======
+>>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
 
+summary(ols$model)
 
+<<<<<<< HEAD
 anova(modelo1,modelo2, joint = FALSE,se = "ker")
 anova(modelo2,modelo3, joint = FALSE,se = "ker")
 anova(modelo1,modelo3, joint = FALSE,se = "ker")
+=======
+anova(modelo1,modelo2, modelo3, test = "rank", joint = FALSE)
+>>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
