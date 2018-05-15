@@ -2,18 +2,19 @@ rm(list = ls())
 
 setwd("/home/hector/GoogleDrivePersonal/Docencia/Tesistas/Rodrigo Monje /")
 
-
+if (!require(dplyr)) install.packages("dplyr"); require(dplyr) ## Importar bases de datos en otros formatos 
 if (!require(foreign)) install.packages("foreign"); require(foreign) ## Importar bases de datos en otros formatos 
 if (!require(ggplot2)) install.packages("ggplot2"); require(ggplot2)## Para gráficas más sofisticadas 
-if (!require(tidyverse)) install.packages("tidyverse"); require(tidyverse) # para el operador %>% 
+#if (!require(tidyverse)) install.packages("tidyverse"); require(tidyverse) # para el operador %>% 
 if (!require(quantreg)) install.packages("quantreg"); require(quantreg)
 if (!require(stargazer)) install.packages("stargazer"); require(stargazer)
 if (!require(sandwich)) install.packages("sandwich"); require(sandwich)
 if (!require(lmtest)) install.packages("lmtest"); require(lmtest)
+
 # Se quitan los datos de vinos de mendoza y de españa. 
+
 data = read.csv("datos_vino_MEJORADA.csv") %>% filter(valle!="MENDOZA", valle!="ESPAÑA")
  
-
 data = mutate(data,
       tramos = ifelse(puntaje>=80 & puntaje<=84,1,  # 80-84 : correcto o bueno 
       ifelse(puntaje>=85 & puntaje<=86,2, # 85-86: buenos aspirando a muy buenos 
@@ -84,22 +85,17 @@ form = "log(pmercado) ~ gran.reserva+premium+super.premium+icono+
   cs+came+sy+et+
   medianas.bajo.precio+emergentes.exclusivas+
   valle.maipo+colchagua+
-<<<<<<< HEAD
   puntaje+puntajesq+
   antigüedad+antisq"
-=======
-  puntaje+I(puntaje**2)+
-  antigüedad+I(antigüedad**2)"
->>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
 
 ols = lm(form, data = data)
-coeftest(ols, vcov = vcovHC(ols, "HC1"))
+ols_rob = coeftest(ols, vcov = vcovHC(ols, "HC1"))
 
-modelo1 = rq(form,tau = .25, data=data, method = "br", 
+modelo1 = rq(form,tau = .25, data=data, method = "fn", 
             contrasts = TRUE)
-modelo2 = rq(form,tau = .5, data=data, method = "br", 
+modelo2 = rq(form,tau = .5, data=data, method = "fn", 
              contrasts = TRUE)
-modelo3 = rq(form,tau = .75, data=data, method = "br", 
+modelo3 = rq(form,tau = .75, data=data, method = "fn", 
              contrasts = TRUE)
 
 rho = function(u, tau=.5) u*(tau-(u<0))
@@ -133,20 +129,51 @@ sumM3 = summary(modelo3, se = "boot", bsmethod = "xy", R = 1000)
 stargazer(sumM1$coefficients, type = "text")
 stargazer(sumM2$coefficients, type = "text")
 stargazer(sumM3$coefficients, type = "text")
-<<<<<<< HEAD
 
 
+pval1 = sumM1$coefficients[,"Pr(>|t|)"]
+pval2 = sumM2$coefficients[,"Pr(>|t|)"]
+pval3 = sumM3$coefficients[,"Pr(>|t|)"]
+pval4 = ols_rob[,4]
+modelos = data.frame(q25 = sumM1$coefficients[,c("Value")], 
+                     q50 = sumM2$coefficients[,c("Value")], 
+                     q75 = sumM3$coefficients[,c("Value")], 
+                     ols = ols$coefficients) %>% round(2) %>%
+                   mutate(pv1 = ifelse(pval1<0.01,"***", 
+                                ifelse(pval1<0.05,"**",
+                                ifelse(pval1<0.1,"*","")))) %>% 
+                  mutate(pv2 = ifelse(pval2<0.01,"***", 
+                                ifelse(pval2<0.05,"**",
+                                ifelse(pval2<0.1,"*","")))) %>% 
+                  mutate(pv3 = ifelse(pval3<0.01,"***", 
+                                ifelse(pval3<0.05,"**",
+                                ifelse(pval3<0.1,"*","")))) %>% 
+                  mutate(pv4 = ifelse(pval1<0.01,"***", 
+                                ifelse(pval1<0.05,"**",
+                                ifelse(pval1<0.1,"*","")))) %>% 
+                select(q25,pv1,q50,pv2,q75,pv3,ols,pv4)
+  
+rownames(modelos) =   rownames(sumM1$coefficients)
 
-=======
+path = file.path("/home/hector/GoogleDrivePersonal","Research/Papers in progress",
+                  "Article - hedonic-prices-wine/hedonic-prices-wine",
+                 "modelos.csv")
 
+write.csv(modelos, path)
 
-
->>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
 QR = rq(form,tau = seq(0.05,0.95, by=0.05), data=data, method = "fn")
-sumQR = summary(QR, se = "boot", bsmethod = "xy", R = 100)
+sumQR = summary(QR, se = "boot", bsmethod = "xy", R = 1000)
 
-plot(sumQR, parm = c(-1,-6,-7,-8,-9),ols = FALSE)
-<<<<<<< HEAD
+plot(sumQR, parm = c(-1,-6,-7,-8,-9),ols = FALSE, main = c("Gran reserva","Premium",
+                                                           "Súper premium","Ícono",
+                                                           "Medianas bajo precio",
+                                                           "Emergentes Exclusivas",
+                                                           "Valle Maipo", 
+                                                           "Valle Colchagua",
+                                                           "Puntaje", 
+                                                           "Puntaje²", 
+                                                           "Antigüedad", 
+                                                           "Antigüedad²"))
 
 summary(ols$model)
 
@@ -162,15 +189,11 @@ modelo2 = rq(form,tau = .5, data=data, method = "fn",
              contrasts = FALSE)
 modelo3 = rq(form,tau = .75, data=data, method = "fn", 
              contrasts = FALSE)
-=======
->>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
 
 summary(ols$model)
 
-<<<<<<< HEAD
+
 anova(modelo1,modelo2, joint = FALSE,se = "ker")
 anova(modelo2,modelo3, joint = FALSE,se = "ker")
 anova(modelo1,modelo3, joint = FALSE,se = "ker")
-=======
-anova(modelo1,modelo2, modelo3, test = "rank", joint = FALSE)
->>>>>>> fb93f7ed75c5214ac13e8795cef22fd7f0910235
+#anova(modelo1,modelo2, modelo3, test = "rank", joint = FALSE)
