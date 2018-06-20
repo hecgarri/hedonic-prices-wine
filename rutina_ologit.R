@@ -82,7 +82,7 @@ data = mutate(data, colchagua = ifelse(valle=="COLCHAGUA" |
 data = data %>% filter(oc!=1)
 
 form = "log(pmercado) ~ gran.reserva+premium+super.premium+icono+
-  cs+came+sy+et+
+  cs+me+ca+et+
   medianas.bajo.precio+emergentes.exclusivas+
   valle.maipo+colchagua+
   puntaje+puntajesq+
@@ -162,7 +162,7 @@ path = file.path("/home/hector/GoogleDrivePersonal","Research/Papers in progress
 write.csv(modelos, path)
 
 QR = rq(form,tau = seq(0.05,0.95, by=0.05), data=data, method = "fn")
-sumQR = summary(QR, se = "boot", bsmethod = "xy", R = 1000)
+sumQR = summary(QR, se = "boot", bsmethod = "xy", R = 100)
 
 plot(sumQR, parm = c(-1,-6,-7,-8,-9),ols = FALSE, main = c("Gran reserva","Premium",
                                                            "Súper premium","Ícono",
@@ -197,3 +197,163 @@ anova(modelo1,modelo2, joint = FALSE,se = "ker")
 anova(modelo2,modelo3, joint = FALSE,se = "ker")
 anova(modelo1,modelo3, joint = FALSE,se = "ker")
 #anova(modelo1,modelo2, modelo3, test = "rank", joint = FALSE)
+
+
+
+modelo1 = rq(log(puntaje) ~ gran.reserva+premium+super.premium+icono+
+               cs+came+sy+et+medianas.bajo.precio+emergentes.exclusivas+
+               valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+               antigüedad+antisq,
+             tau = .25, data=data, method = "fn", 
+             contrasts = FALSE)
+
+sumM1 = summary(modelo1, se = "boot", bsmethod = "xy", R = 100)
+
+
+modelo2 = rq(log(puntaje) ~ gran.reserva+premium+super.premium+icono+
+               cs+came+sy+et+medianas.bajo.precio+emergentes.exclusivas+
+               valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+               antigüedad+antisq,
+             tau = .5, data=data, method = "fn", 
+             contrasts = FALSE)
+
+sumM2 = summary(modelo2, se = "boot", bsmethod = "xy", R = 100)
+
+
+modelo3 = rq(log(puntaje) ~ gran.reserva+premium+super.premium+icono+
+               cs+came+ca+et+medianas.bajo.precio+emergentes.exclusivas+
+               valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+               antigüedad+antisq,
+             tau = .75, data=data, method = "fn", 
+             contrasts = FALSE)
+
+sumM3 = summary(modelo3, se = "boot", bsmethod = "xy", R = 100)
+
+
+
+modelo2 = rq(form,tau = .5, data=data, method = "fn", 
+             contrasts = FALSE)
+modelo3 = rq(form,tau = .75, data=data, method = "fn", 
+             contrasts = FALSE)
+
+summary(ols$model)
+
+
+anova(modelo1,modelo2, joint = FALSE,se = "ker")
+anova(modelo2,modelo3, joint = FALSE,se = "ker")
+anova(modelo1,modelo3, joint = FALSE,se = "ker")
+#anova(modelo1,modelo2, modelo3, test = "rank", joint = FALSE)
+
+
+
+
+modelo11 = rq(puntaje ~ gran.reserva+premium+super.premium+icono+
+               cs+me+ca+et+medianas.bajo.precio+emergentes.exclusivas+
+               valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+               antigüedad+antisq,
+             tau = .25, data=data, method = "fn", 
+             contrasts = FALSE)
+
+sumM11 = summary(modelo11, se = "boot", bsmethod = "xy", R = 100)
+
+
+modelo21 = rq(puntaje ~ gran.reserva+premium+super.premium+icono+
+               cs+me+ca+et+medianas.bajo.precio+emergentes.exclusivas+
+               valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+               antigüedad+antisq,
+             tau = .5, data=data, method = "fn", 
+             contrasts = FALSE)
+
+sumM21 = summary(modelo21, se = "boot", bsmethod = "xy", R = 100)
+
+
+modelo31 = rq(puntaje ~ gran.reserva+premium+super.premium+icono+
+               cs+me+ca+et+medianas.bajo.precio+emergentes.exclusivas+
+               valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+               antigüedad+antisq,
+             tau = .75, data=data, method = "fn", 
+             contrasts = FALSE)
+
+sumM31 = summary(modelo31, se = "boot", bsmethod = "xy", R = 100)
+
+
+V_hat1 = sum(rho(modelo11$residuals, modelo11$tau)) 
+V_tilde1 = sum(rho(rq(data$puntaje~1, tau = .25,
+                      method = "fn")$residuals,
+                   modelo11$tau))
+
+R1 = 1-(V_hat1/V_tilde1)  
+
+V_hat2 = sum(rho(modelo21$residuals, modelo21$tau)) 
+V_tilde2 = sum(rho(rq(data$puntaje~1, tau = .5,
+                      method = "fn")$residuals,
+                   modelo21$tau))
+
+R2 = 1-(V_hat2/V_tilde2)  
+
+
+V_hat3 = sum(rho(modelo31$residuals, modelo31$tau)) 
+V_tilde3 = sum(rho(rq(data$puntaje~1, tau = .75,
+                      method = "fn")$residuals,
+                   modelo31$tau))
+
+R3 = 1-(V_hat3/V_tilde3)  
+
+
+
+ols2 = lm(puntaje ~ gran.reserva+premium+super.premium+icono+
+           cs+me+ca+et+medianas.bajo.precio+emergentes.exclusivas+
+           valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+           antigüedad+antisq, data = data)
+ols_rob2 = coeftest(ols2, vcov = vcovHC(ols2, "HC1"))
+
+
+
+QR2 = rq(puntaje ~ gran.reserva+premium+super.premium+icono+
+          cs+came+ca+et+medianas.bajo.precio+emergentes.exclusivas+
+          valle.maipo+colchagua+frescor+dulzura+cuerpo+astringencia+
+          antigüedad+antisq,tau = seq(0.05,0.95, by=0.05),
+        data=data, method = "fn")
+
+sumQR2 = summary(QR2, se = "boot", bsmethod = "xy", R = 100)
+
+plot(sumQR2, ols = FALSE, main = c("Gran reserva","Premium",
+                                  "Súper premium","Ícono",
+                                  "Cabernet Sauvignon",
+                                  "Merlot",
+                                  "Carmenere","ensamblaje tinto",
+                                  "Medianas bajo precio",
+                                  "Emergentes Exclusivas",
+                                  "Valle Maipo", 
+                                  "Valle Colchagua",
+                                  "Frescor","Dulzura",
+                                  "Cuerpo", "Astringencia",
+                                  "Antigüedad", 
+                                  "Antigüedad²"))
+
+media = mean(data$pmercado)
+quartiles = quantile(data$pmercado, probs = c(0.25,.5,.75))
+min(data$pmercado)
+max(data$pmercado)
+mode(data$pmercado)
+
+
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+getmode(data$pmercado)
+
+sd(data$pmercado)
+
+options(scipen = 3)
+ggplot(data=data, aes(data$pmercado)) + 
+  geom_histogram(aes(y =..count..), 
+                 breaks=seq(2990, 180000, by = 2000), 
+                 col="red", 
+                 fill="green", 
+                 alpha = .2) + 
+  geom_density(col=2) + 
+  labs(title="") +
+  labs(x="Wine prices (chilean peso)", y="Frequency")
